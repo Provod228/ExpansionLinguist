@@ -1,6 +1,11 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from app.routers import users
+
+app = FastAPI(title="WordTracker API")
+
+app.include_router(users.router)
+
 
 @app.get("/")
 async def home():

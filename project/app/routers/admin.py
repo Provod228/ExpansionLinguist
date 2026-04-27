@@ -18,7 +18,7 @@ def is_admin(user: User):
     return hasattr(user, "role") and user.role == "admin"
  
 
-@router.get("/users")
+@router.get("/set_users", status_code=200)
 def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     
     if not is_admin(current_user):
@@ -37,8 +37,8 @@ def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(ge
         for u in users
     ]
 
-@router.put("/users/role")
-def update_role_user(role_data: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.put("/users/{user_id}/role", status_code=204)
+def update_role_user(user_id: int, role_data: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Admin access required")
     
@@ -50,7 +50,7 @@ def update_role_user(role_data: RoleUpdate, db: Session = Depends(get_db), curre
     db.commit()
     return {"message": f"User {user.username} role changed to {role_data.new_role}"}
 
-@router.delete("/users")
+@router.delete("/users/{user_id}/delete", status_code=204)
 def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Admin access required")

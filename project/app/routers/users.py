@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -12,18 +14,20 @@ class UserRegister(BaseModel):
     username: str
     email: EmailStr
     password: str
-    nickname: Optional[str] = None 
+    nickname: Optional[str] = None
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
 class UserResponse(BaseModel):
+
     id: int
-    username: str
-    email: str
+    username: Optional[str]
+    email: Optional[str]
     nickname: Optional[str]
-    created_at: Optional[str]
+    role: Optional[str]
+    created_at: Optional[datetime]
 
 class Token(BaseModel):
     access_token: str
@@ -40,7 +44,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     new_user = User(
         username=user_data.username,
         email=user_data.email,
-        nickname=user_data.nickname or user_data.username,
+        nickname=user_data.nickname,
         password=get_password_hash(user_data.password),
         role=UserRole.USER.value
     )
