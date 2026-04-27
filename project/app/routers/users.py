@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from models.user import User
+from models.user import User, UserRole
 from app.auth import get_password_hash, authenticate_user, create_access_token, get_current_user
 from pydantic import BaseModel, EmailStr
 from typing import Optional
@@ -12,7 +12,7 @@ class UserRegister(BaseModel):
     username: str
     email: EmailStr
     password: str
-    nickname: Optional[str] = None
+    nickname: Optional[str] = None 
 
 class UserLogin(BaseModel):
     username: str
@@ -41,7 +41,8 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         username=user_data.username,
         email=user_data.email,
         nickname=user_data.nickname or user_data.username,
-        password=get_password_hash(user_data.password)
+        password=get_password_hash(user_data.password),
+        role=UserRole.USER.value
     )
     db.add(new_user)
     db.commit()

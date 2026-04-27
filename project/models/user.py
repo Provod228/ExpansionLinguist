@@ -2,6 +2,13 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
+import enum
+
+
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    USER = "user"
+    GUEST = "guest"
 
 class User(Base):
     __tablename__ = "users"
@@ -11,6 +18,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=True)
     username = Column(String(100), unique=True, nullable=True)
     password = Column(String(255), nullable=True)
+    role = Column(String(50), default=UserRole.GUEST.value)
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
 
