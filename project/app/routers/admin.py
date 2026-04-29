@@ -38,7 +38,7 @@ def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(ge
     ]
 
 @router.put("/users/{user_id}/role", status_code=204)
-def update_role_user(user_id: int, role_data: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_user_role(user_id: int, role_data: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Admin access required")
     
