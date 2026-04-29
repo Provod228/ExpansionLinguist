@@ -13,7 +13,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 class UserRegister(BaseModel):
     username: str
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=6, description="The password must be at least 6 characters long.")
     nickname: Optional[str] = None
 
 class UserLogin(BaseModel):

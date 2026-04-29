@@ -34,7 +34,7 @@ def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(ge
     ]
 
 @router.put("/users/{user_id}/role", status_code=204)
-def update_role_user(user_id: int, role_data: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_user_role(user_id: int, role_data: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Admin access required")
 
@@ -62,21 +62,4 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
 
 
 
-# Данный роутер возможно будет использоваться позже и , скорее всего, будет улучшен, так как сейчас
-# он показывает ограниченные данные, а именно только количество: слов, пользователей и записей.
 
-
-# @router.get("/users")
-# def get_status(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-#     if not is_admin(current_user):
-#         raise HTTPException(status_code=403, detail="Admin access required")
-    
-#     total_users = db.query(User).count()
-#     total_words = db.query(Word).count()
-#     total_notes = db.query(Note).count()
-    
-#     return {
-#         "total_users": total_users,
-#         "total_words": total_words,
-#         "total_notes": total_notes
-#     }
