@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from models.user import User, UserRole
-from app.auth import get_password_hash, authenticate_user, create_access_token, get_current_user
+from service.auth import get_password_hash, authenticate_user, create_access_token, get_current_user
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
