@@ -36,7 +36,8 @@ async def api_search_word(db, massage, current_user):
     try:
         # Получаем грамматическое описание слова
         definition = await get_definition_wiktionary(massage.word)
-
+        if definition is None:
+            raise HTTPException(status_code=503, detail="Definition service unavailable")
         # Создаем новый концепт с описанием
         concept = Concept(summary=definition)
         db.add(concept)
