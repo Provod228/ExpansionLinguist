@@ -66,8 +66,8 @@ def word_count_db(db, current_user):
         Note.user_id == current_user.id
     ).count()
 
-@router.get("/note-list", response_model=List[Word])
-def get_all_words(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("/note-list", response_model=List[WordResponse])
+async def get_all_words(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     rows = (
         db.query(Word.id, Word.word, Concept.summary)
@@ -82,10 +82,10 @@ def get_all_words(user_id: int, db: Session = Depends(get_db), current_user: Use
     return [WordResponse(id=r.id, word=r.word, summary=r.summary) for r in rows]
 
 
-def api_search_word(db, massage, current_user):
+async def api_search_word(db, massage, current_user):
     try:
         # Получаем грамматическое описание слова
-        definition = get_definition_wiktionary(massage.word)
+        definition = await get_definition_wiktionary(massage.word)
 
         # Создаем новый концепт с описанием
         concept = Concept(summary=definition)
@@ -118,6 +118,8 @@ def api_search_word(db, massage, current_user):
         db.add(note_word)
         db.commit()
 
+        return word
+
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -126,8 +128,8 @@ def api_search_word(db, massage, current_user):
         )
 
 
-@router.get("/search", response_model=Word)
-def search_word(massage: WordsSearch, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("/search", response_model=WordResponse)
+async def search_word(massage: WordsSearch, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not is_user(current_user):
         word_count = word_count_db(db, current_user)
 
@@ -139,7 +141,7 @@ def search_word(massage: WordsSearch, db: Session = Depends(get_db), current_use
 
     word = db.query(Word).filter(Word.word == massage.word.lower()).first()
     if word is None:
-        word = api_search_word(db, massage, current_user)
+        word = await api_search_word(db, massage, current_user)
 
 
     if word.concept is None:
@@ -153,3 +155,4 @@ def search_word(massage: WordsSearch, db: Session = Depends(get_db), current_use
         word=word.word,
         summary=word.concept.summary
     )
+
