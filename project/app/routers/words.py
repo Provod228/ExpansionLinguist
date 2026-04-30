@@ -156,3 +156,31 @@ async def search_word(massage: WordsSearch, db: Session = Depends(get_db), curre
         summary=word.concept.summary
     )
 
+
+@router.delete("/delete/{word_id}", status_code=200)
+async def del_note_word(
+        word_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+
+    # Находим связь между заметкой пользователя и словом
+    note_word = db.query(NoteWord).join(Note).filter(
+        Note.user_id == current_user.id,
+        NoteWord.id_word == word_id
+    ).first()
+
+    if not note_word:
+        raise HTTPException(
+            status_code=404,
+            detail="Word not found in your notes"
+        )
+
+    # Удаляем связь (слово остаётся в БД для других пользователей)
+    db.delete(note_word)
+    db.commit()
+
+    return {
+        "message": f"Word with id {word_id} successfully removed from your notes",
+        "word_id": word_id
+    }
