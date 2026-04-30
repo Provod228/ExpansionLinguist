@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from models.user import User, UserRole
-from service.auth import get_current_user
+from service.auth import get_current_user, is_admin
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -10,9 +10,6 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 class RoleUpdate(BaseModel):
     new_role: UserRole
 
-def is_admin(user: User):
-    return hasattr(user, "role") and user.role == "admin"
- 
 
 @router.get("/set_users", status_code=200)
 async def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

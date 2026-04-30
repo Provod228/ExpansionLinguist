@@ -80,3 +80,12 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+
+def is_user(user: User):
+    return hasattr(user, "role") and user.role == "user" or user.role == "admin"
+
+
+def is_admin(user: User):
+    return hasattr(user, "role") and user.role == "admin"
