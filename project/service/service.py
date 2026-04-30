@@ -7,7 +7,7 @@ from models import Concept, Word, Note, NoteWord
 
 async def get_definition_wiktionary(word: str) -> str | None:
     """Получить толкование из Wiktionary (бесплатно)"""
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         # Получаем страницу слова
         response = await client.get(
             f"https://ru.wiktionary.org/wiki/{word}",
