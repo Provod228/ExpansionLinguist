@@ -23,3 +23,8 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
 
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+
+    def __init__(self, **kwargs):
+        if 'role' not in kwargs:
+            kwargs['role'] = UserRole.GUEST.value
+        super().__init__(**kwargs)
