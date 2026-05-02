@@ -1,0 +1,122 @@
+.word-search {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.search-button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.search-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.search-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.result-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.word-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.word-header h3 {
+    color: #667eea;
+    font-size: 20px;
+}
+
+.add-btn {
+    background: #48bb78;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.add-btn:hover {
+    background: #38a169;
+    transform: translateY(-1px);
+}
+
+.word-summary h4 {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.word-summary p {
+    color: #333;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.error-message {
+    background: #fee;
+    color: #c33;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.tips {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f0f0ff;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #667eea;
+    text-align: center;
+}

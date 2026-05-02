@@ -18,7 +18,7 @@ except ImportError:
     raise ImportError("Please install pymorphy3: pip install pymorphy3")
 
 
-router = APIRouter(prefix="/words", tags=["admin"])
+router = APIRouter(prefix="/words", tags=["word"])
 YANDEX_DICT_API_KEY = os.getenv("API_SEARCH_WORD")
 
 class WordResponse(BaseModel):

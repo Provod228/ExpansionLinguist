@@ -1,0 +1,91 @@
+.word-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.word-count {
+    padding: 8px 12px;
+    background: #f0f0ff;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #667eea;
+    text-align: center;
+}
+
+.words-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.word-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s;
+}
+
+.word-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.word-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.word-card-header h3 {
+    color: #667eea;
+    font-size: 16px;
+    margin: 0;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.delete-btn:hover {
+    background: #fee;
+    transform: scale(1.1);
+}
+
+.word-definition {
+    color: #555;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.empty-state p {
+    margin: 10px 0;
+}
+
+.empty-state .hint {
+    font-size: 12px;
+    color: #bbb;
+}
