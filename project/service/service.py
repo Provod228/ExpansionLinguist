@@ -1,79 +1,84 @@
-import httpx
-from bs4 import BeautifulSoup
+import os
+from openai import OpenAI
 from fastapi import HTTPException
 
-from models import Concept, Word, Note, NoteWord
+from models import Concept, Word
+
+# OpenRouter настройки
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+if not OPENROUTER_API_KEY:
+    raise RuntimeError("OPENROUTER_API_KEY is not set in .env file")
+
+client = OpenAI(
+    api_key=OPENROUTER_API_KEY,
+    base_url=OPENROUTER_BASE_URL
+)
 
 
-async def get_definition_wiktionary(word: str) -> str | None:
-    """Получить толкование из Wiktionary (бесплатно)"""
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        # Получаем страницу слова
-        response = await client.get(
-            f"https://ru.wiktionary.org/wiki/{word}",
-            follow_redirects=True
-        )
-
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-
-            # Ищем секцию с толкованием
-            # В русском Wiktionary определения обычно в <ol> тегах
-            for ol in soup.find_all('ol'):
-                # Проверяем, что это не примеры использования
-                if not ol.find_previous('span', string='Примеры'):
-                    first_li = ol.find('li')
-                    if first_li:
-                        # Берём текст первого определения
-                        definition = first_li.get_text(strip=True)
-                        if definition and len(definition) > 10:
-                            return definition
-    return None
-
-
-
-async def api_search_word(db, massage, current_user):
+async def get_definition_ai(word: str) -> str:
+    """Определение через OpenRouter (рабочая бесплатная модель)"""
     try:
-        # Получаем грамматическое описание слова
-        definition = await get_definition_wiktionary(massage.word)
-        if definition is None:
-            raise HTTPException(status_code=503, detail="Definition service unavailable")
-        # Создаем новый концепт с описанием
+        completion = client.chat.completions.create(
+            # Рабочая бесплатная модель на июнь 2026
+            model="google/gemma-4-31b-it:free",
+            # Альтернативы (раскомментируй, если хочешь попробовать):
+            # model="meta-llama/llama-3.3-70b-instruct:free",
+            # model="nvidia/nemotron-3-super-120b-a12b:free",
+            
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Ты — лучший русский толковый словарь. "
+                        "Давай точное, красивое и естественное определение слова или словосочетания. "
+                        "Используй литературный русский язык. "
+                        "Ответ — 1–3 предложения. "
+                        "Не добавляй вступления вроде 'Определение слова:', 'Это означает' и т.д. "
+                        "Просто чистое определение."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Дай определение: {word}"
+                }
+            ],
+            max_tokens=450,
+            temperature=0.35,
+            top_p=0.95
+        )
+        
+        return completion.choices[0].message.content.strip()
+
+    except Exception as e:
+        print(f"OpenRouter error for '{word}': {e}")
+        return None
+
+
+async def create_or_get_word(db, massage):
+    try:
+        existing = db.query(Word).filter(Word.word == massage.word.lower()).first()
+        if existing and existing.concept and len(existing.concept.summary) > 40:
+            return existing
+
+        definition = await get_definition_ai(massage.word)
+
+        if not definition:
+            definition = f"Определение для слова «{massage.word}» не удалось получить."
+
         concept = Concept(summary=definition)
         db.add(concept)
-        db.flush()  # Получаем ID концепта
+        db.flush()
 
-        # Создаем новое слово (сохраняем в исходной форме)
-        word = Word(
-            word=massage.word.lower(),
-            id_concept=concept.id
-        )
-        db.add(word)
-        db.flush()  # Получаем ID слова
+        word_obj = Word(word=massage.word.lower(), id_concept=concept.id)
+        db.add(word_obj)
+        db.flush()
+        db.refresh(word_obj)
 
-        # Находим или создаем заметку для пользователя
-        note = db.query(Note).filter(Note.user_id == current_user.id).first()
-        if not note:
-            note = Note(
-                title=f"Слова пользователя {current_user.username or current_user.id}",
-                user_id=current_user.id
-            )
-            db.add(note)
-            db.flush()
-
-        # Привязываем слово к заметке пользователя
-        note_word = NoteWord(
-            id_note=note.id,
-            id_word=word.id
-        )
-        db.add(note_word)
-        db.commit()
-
-        return word
+        return word_obj
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing word: {str(e)}"
-        )
+        print(f"Error in create_or_get_word: {e}")
+        raise HTTPException(status_code=500, detail="Не удалось получить определение")

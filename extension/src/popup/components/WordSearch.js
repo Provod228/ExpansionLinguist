@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './WordSearch.css';
 
 const WordSearch = ({ apiUrl, token }) => {
@@ -8,6 +8,53 @@ const WordSearch = ({ apiUrl, token }) => {
     const [error, setError] = useState('');
     const [addLoading, setAddLoading] = useState(false);
     const [addSuccess, setAddSuccess] = useState(false);
+
+    // Автопоиск при открытии из контекстного меню
+    useEffect(() => {
+        chrome.storage.local.get(['autoSearchWord'], (result) => {
+            if (result.autoSearchWord) {
+                const searchTerm = result.autoSearchWord;
+                setWord(searchTerm);
+                
+                // Автоматически запускаем поиск
+                setTimeout(() => {
+                    handleAutoSearch(searchTerm);
+                }, 400); // небольшая задержка, чтобы UI успел отрисоваться
+
+                chrome.storage.local.remove('autoSearchWord');
+            }
+        });
+    }, [apiUrl, token]); // зависимости
+
+    const handleAutoSearch = async (searchWord) => {
+        if (!searchWord?.trim()) return;
+
+        setLoading(true);
+        setError('');
+        setResult(null);
+
+        try {
+            const response = await fetch(`${apiUrl}/words/search?word=${encodeURIComponent(searchWord)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.detail || 'Search failed');
+            }
+
+            const data = await response.json();
+            setResult(data);
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const searchWord = async (e) => {
         e.preventDefault();
@@ -27,7 +74,7 @@ const WordSearch = ({ apiUrl, token }) => {
             });
 
             if (!response.ok) {
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 throw new Error(data.detail || 'Search failed');
             }
 
@@ -42,10 +89,12 @@ const WordSearch = ({ apiUrl, token }) => {
 
     const addToNotes = async () => {
         if (!result) return;
+        
         setAddLoading(true);
         setError('');
+
         try {
-            const response = await fetch(`${apiUrl}/words/add`, {
+            const response = await fetch(`${apiUrl}/words/add`, {  // ← Внимание: этот эндпоинт пока не существует!
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -55,7 +104,7 @@ const WordSearch = ({ apiUrl, token }) => {
             });
 
             if (!response.ok) {
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 throw new Error(data.detail || 'Failed to add word');
             }
 
@@ -90,7 +139,11 @@ const WordSearch = ({ apiUrl, token }) => {
                 <div className="result-container">
                     <div className="word-header">
                         <h3>{result.word}</h3>
-                        <button onClick={addToNotes} disabled={addLoading} className="add-btn">
+                        <button 
+                            onClick={addToNotes} 
+                            disabled={addLoading} 
+                            className="add-btn"
+                        >
                             {addLoading ? 'Adding...' : '📌 Add to my words'}
                         </button>
                     </div>
