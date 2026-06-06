@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# Virtual environments
+.venv
+venv
+ENV
+env.bak
+venv.bak
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Node.js / Extension
+extension/node_modules/
+extension/dist/
+extension/build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# Documentation and screenshots
+docs/
+screenshots/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Other
+__pycache__
+.pytest_cache
+.ruff_cache
