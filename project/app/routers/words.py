@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from service.auth import get_current_user, is_user
 from app.database import get_db
-from models import User, Note, NoteWord
+from models import User, Note, NoteWord, Word
 from service.database_query import get_word_concept, word_count_db, get_word, get_note_word
 from service.service import create_or_get_word
 
@@ -78,29 +78,37 @@ async def add_word_to_notes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Добавить слово в My Words (по кнопке)"""
+    """Добавить слово в My Words"""
     if not is_user(current_user):
         if word_count_db(db, current_user) >= 5:
             raise HTTPException(status_code=403, detail="Guest limit reached")
 
-    class Massage:
-        def __init__(self, w): 
-            self.word = w
-    massage = Massage(request.word)
+    word_lower = request.word.lower().strip()
 
-    word_obj = get_word(db, massage)
+    # Пытаемся найти слово
+    word_obj = db.query(Word).filter(Word.word == word_lower).first()
+
+
     if not word_obj:
-        raise HTTPException(status_code=404, detail="Word not found")
+        class Massage:
+            def __init__(self, w): 
+                self.word = w
+        massage = Massage(word_lower)
+        word_obj = await create_or_get_word(db, massage)
+
+    if not word_obj or not word_obj.concept:
+        raise HTTPException(status_code=404, detail="Word not found or no definition")
 
     # Проверяем, уже добавлено ли
-    if get_note_word(db, current_user, word_obj.id):
+    existing_note_word = get_note_word(db, current_user, word_obj.id)
+    if existing_note_word:
         return WordResponse(
             id=word_obj.id, 
             word=word_obj.word, 
-            summary=word_obj.concept.summary if word_obj.concept else None
+            summary=word_obj.concept.summary
         )
 
-    # Создаём заметку если нет
+    # Создаём заметку, если у пользователя её ещё нет
     note = db.query(Note).filter(Note.user_id == current_user.id).first()
     if not note:
         note = Note(
@@ -112,13 +120,13 @@ async def add_word_to_notes(
 
     db.add(NoteWord(id_note=note.id, id_word=word_obj.id))
     db.commit()
+    db.refresh(word_obj)
 
     return WordResponse(
         id=word_obj.id, 
         word=word_obj.word, 
-        summary=word_obj.concept.summary if word_obj.concept else None
+        summary=word_obj.concept.summary
     )
-
 
 @router.delete("/delete/{word_id}", status_code=200)
 async def del_note_word(
