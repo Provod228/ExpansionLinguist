@@ -11,8 +11,8 @@
   ],
   "host_permissions": [
     "http://localhost:8000/*",
-    "https://your-api-domain.com/*"
-  ],
+    "https://expansionlinguist.onrender.com/*"
+],
   "background": {
     "service_worker": "background.js"
   },

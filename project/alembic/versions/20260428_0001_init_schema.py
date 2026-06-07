@@ -7,6 +7,7 @@ Create Date: 2026-04-28
 Создаёт исходную схему БД:
     users → notes → note_word ← words → concepts
 """
+
 from alembic import op
 import sqlalchemy as sa
 

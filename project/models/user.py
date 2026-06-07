@@ -10,9 +10,10 @@ class UserRole(str, enum.Enum):
     USER = "user"
     GUEST = "guest"
 
+
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     nickname = Column(String(100), nullable=True)
     email = Column(String(255), unique=True, nullable=True)
@@ -25,6 +26,6 @@ class User(Base):
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
 
     def __init__(self, **kwargs):
-        if 'role' not in kwargs:
-            kwargs['role'] = UserRole.GUEST.value
+        if "role" not in kwargs:
+            kwargs["role"] = UserRole.GUEST.value
         super().__init__(**kwargs)

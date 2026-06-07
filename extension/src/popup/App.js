@@ -8,7 +8,7 @@ const App = () => {
     const [activeTab, setActiveTab] = useState('search');
     const [token, setToken] = useState(null);
     const [user, setUser] = useState(null);
-    const [apiUrl, setApiUrl] = useState('http://localhost:8000');
+    const [apiUrl, setApiUrl] = useState('https://expansionlinguist.onrender.com');
 
     useEffect(() => {
         chrome.storage.sync.get(['apiUrl', 'token', 'user'], (result) => {

@@ -69,7 +69,9 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM]
+        )
         user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -80,7 +82,6 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
-
 
 
 def is_user(user: User):

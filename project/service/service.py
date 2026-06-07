@@ -11,10 +11,7 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 if not OPENROUTER_API_KEY:
     raise RuntimeError("OPENROUTER_API_KEY is not set in .env file")
 
-client = OpenAI(
-    api_key=OPENROUTER_API_KEY,
-    base_url=OPENROUTER_BASE_URL
-)
+client = OpenAI(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_BASE_URL)
 
 
 async def get_definition_ai(word: str) -> str:
@@ -26,7 +23,6 @@ async def get_definition_ai(word: str) -> str:
             # Альтернативы (раскомментируй, если хочешь попробовать):
             # model="meta-llama/llama-3.3-70b-instruct:free",
             # model="nvidia/nemotron-3-super-120b-a12b:free",
-            
             messages=[
                 {
                     "role": "system",
@@ -37,18 +33,15 @@ async def get_definition_ai(word: str) -> str:
                         "Ответ — 1–3 предложения. "
                         "Не добавляй вступления вроде 'Определение слова:', 'Это означает' и т.д. "
                         "Просто чистое определение."
-                    )
+                    ),
                 },
-                {
-                    "role": "user",
-                    "content": f"Дай определение: {word}"
-                }
+                {"role": "user", "content": f"Дай определение: {word}"},
             ],
             max_tokens=450,
             temperature=0.35,
-            top_p=0.95
+            top_p=0.95,
         )
-        
+
         return completion.choices[0].message.content.strip()
 
     except Exception as e:

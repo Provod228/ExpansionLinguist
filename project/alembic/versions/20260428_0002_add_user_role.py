@@ -4,6 +4,7 @@ Revision ID: 0002_add_user_role
 Revises: 0001_init_schema
 Create Date: 2026-04-28
 """
+
 from alembic import op
 import sqlalchemy as sa
 

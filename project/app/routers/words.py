@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 from service.auth import get_current_user, is_user
 from app.database import get_db
 from models import User, Note, NoteWord, Word
-from service.database_query import get_word_concept, word_count_db, get_word, get_note_word
+from service.database_query import (
+    get_word_concept,
+    word_count_db,
+    get_word,
+    get_note_word,
+)
 from service.service import create_or_get_word
 
 
@@ -27,8 +32,7 @@ class WordAddRequest(BaseModel):
 
 @router.get("/note-list", response_model=List[WordResponse])
 async def get_all_words(
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     """Получить список всех слов пользователя"""
     rows = get_word_concept(db, current_user)
@@ -38,19 +42,18 @@ async def get_all_words(
 @router.get("/search", response_model=WordResponse)
 async def search_word(
     word: str = Query(..., min_length=1, description="Слово для поиска"),
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Поиск слова (без автоматического добавления в My Words)"""
     if not is_user(current_user):
         if word_count_db(db, current_user) >= 5:
             raise HTTPException(
-                status_code=403,
-                detail="Guest user can only search up to 5 words"
+                status_code=403, detail="Guest user can only search up to 5 words"
             )
 
     class Massage:
-        def __init__(self, w): 
+        def __init__(self, w):
             self.word = w
 
     massage = Massage(word)
@@ -60,15 +63,10 @@ async def search_word(
         word_obj = await create_or_get_word(db, massage)
 
     if not word_obj or not word_obj.concept:
-        raise HTTPException(
-            status_code=404,
-            detail="Definition not found"
-        )
+        raise HTTPException(status_code=404, detail="Definition not found")
 
     return WordResponse(
-        id=word_obj.id,
-        word=word_obj.word,
-        summary=word_obj.concept.summary
+        id=word_obj.id, word=word_obj.word, summary=word_obj.concept.summary
     )
 
 
@@ -76,7 +74,7 @@ async def search_word(
 async def add_word_to_notes(
     request: WordAddRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Добавить слово в My Words"""
     if not is_user(current_user):
@@ -88,11 +86,12 @@ async def add_word_to_notes(
     # Пытаемся найти слово
     word_obj = db.query(Word).filter(Word.word == word_lower).first()
 
-
     if not word_obj:
+
         class Massage:
-            def __init__(self, w): 
+            def __init__(self, w):
                 self.word = w
+
         massage = Massage(word_lower)
         word_obj = await create_or_get_word(db, massage)
 
@@ -103,9 +102,7 @@ async def add_word_to_notes(
     existing_note_word = get_note_word(db, current_user, word_obj.id)
     if existing_note_word:
         return WordResponse(
-            id=word_obj.id, 
-            word=word_obj.word, 
-            summary=word_obj.concept.summary
+            id=word_obj.id, word=word_obj.word, summary=word_obj.concept.summary
         )
 
     # Создаём заметку, если у пользователя её ещё нет
@@ -113,7 +110,7 @@ async def add_word_to_notes(
     if not note:
         note = Note(
             title=f"Слова пользователя {current_user.username or current_user.id}",
-            user_id=current_user.id
+            user_id=current_user.id,
         )
         db.add(note)
         db.flush()
@@ -123,16 +120,15 @@ async def add_word_to_notes(
     db.refresh(word_obj)
 
     return WordResponse(
-        id=word_obj.id, 
-        word=word_obj.word, 
-        summary=word_obj.concept.summary
+        id=word_obj.id, word=word_obj.word, summary=word_obj.concept.summary
     )
+
 
 @router.delete("/delete/{word_id}", status_code=200)
 async def del_note_word(
     word_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     note_word = get_note_word(db, current_user, word_id)
     if not note_word:

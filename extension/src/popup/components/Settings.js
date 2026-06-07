@@ -10,7 +10,7 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [localApiUrl, setLocalApiUrl] = useState(apiUrl || 'http://localhost:8000');
+    const [localApiUrl, setLocalApiUrl] = useState(apiUrl || 'https://expansionlinguist.onrender.com');
     const [success, setSuccess] = useState('');
 
     useEffect(() => {

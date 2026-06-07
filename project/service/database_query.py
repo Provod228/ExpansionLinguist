@@ -2,9 +2,7 @@ from models import NoteWord, Note, Word, Concept
 
 
 def word_count_db(db, current_user):
-    return db.query(NoteWord).join(Note).filter(
-        Note.user_id == current_user.id
-    ).count()
+    return db.query(NoteWord).join(Note).filter(Note.user_id == current_user.id).count()
 
 
 def get_word_concept(db, current_user):
@@ -25,9 +23,8 @@ def get_word(db, massage):
 
 def get_note_word(db, current_user, word_id):
     return (
-        db.query(NoteWord).join(Note).filter(
-            Note.user_id == current_user.id,
-            NoteWord.id_word == word_id
-        ).first()
+        db.query(NoteWord)
+        .join(Note)
+        .filter(Note.user_id == current_user.id, NoteWord.id_word == word_id)
+        .first()
     )
-
