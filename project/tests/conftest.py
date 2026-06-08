@@ -1,17 +1,26 @@
 # tests/conftest.py
+import asyncio
+
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
 
-from app.database import Base, get_db
-from main import app
-
-import models.user
-import models.word
 import models.concept
 import models.note
 import models.note_word
+import models.user
+import models.word
+from app.database import Base, get_db
+from main import app
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Создаём event loop для всего тестового сеанса"""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -70,14 +79,15 @@ def test_user(db_session):
 @pytest.fixture(scope="function")
 def test_admin(db_session):
     """Фикстура для администратора"""
+    from models.user import User, UserRole
     from service.auth import get_password_hash
 
-    admin = models.user.User(
+    admin = User(
         username="admin",
         email="admin@test.com",
         nickname="Admin User",
         password=get_password_hash("admin123"),
-        role="admin",
+        role=UserRole.ADMIN.value,
     )
     db_session.add(admin)
     db_session.commit()
