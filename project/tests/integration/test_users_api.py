@@ -1,19 +1,17 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
 
 
 def test_register_user_success(client):
-    """Успешная регистрация пользователя"""
     response = client.post(
         "/users/register",
-        json={"username": "newuser", "email": "new@test.com", "password": "123456"},
+        json={"username": "newuser123", "email": "new123@test.com", "password": "123456"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert data["username"] == "newuser"
+    assert response.json()["username"] == "newuser123"
 
 
 def test_register_user_duplicate_username(client, test_user):
