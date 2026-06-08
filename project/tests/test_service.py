@@ -1,27 +1,27 @@
-import pytest
 from unittest.mock import AsyncMock, patch
-from service.service import get_definition_wiktionary
+
+import pytest
+
+from service.service import get_definition_ai
 
 
 @pytest.mark.asyncio
-async def test_get_definition_wiktionary_success():
-    """При успешном ответе Wiktionary должна вернуться строка"""
+async def test_get_definition_ai_success():
+    """Успешное получение определения через OpenRouter"""
     mock_response = AsyncMock()
-    mock_response.status_code = 200
-    mock_response.text = "<html><ol><li>Тестовое определение</li></ol></html>"
+    mock_response.choices = [AsyncMock()]
+    mock_response.choices[0].message.content = "Тестовое определение слова."
 
-    with patch("httpx.AsyncClient.get", return_value=mock_response):
-        result = await get_definition_wiktionary("тест")
+    with patch("service.service.client.chat.completions.create", return_value=mock_response):
+        result = await get_definition_ai("тест")
         assert result is not None
         assert isinstance(result, str)
+        assert len(result) > 0
 
 
 @pytest.mark.asyncio
-async def test_get_definition_wiktionary_not_found():
-    """При ответе 404 должна вернуться None"""
-    mock_response = AsyncMock()
-    mock_response.status_code = 404
-
-    with patch("httpx.AsyncClient.get", return_value=mock_response):
-        result = await get_definition_wiktionary("несуществующееслово")
+async def test_get_definition_ai_exception():
+    """Проверка обработки ошибки OpenRouter"""
+    with patch("service.service.client.chat.completions.create", side_effect=Exception("API Error")):
+        result = await get_definition_ai("тест")
         assert result is None
