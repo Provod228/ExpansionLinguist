@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -30,6 +30,7 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+    remember_me: bool = False  
 
 
 class UserResponse(BaseModel):
@@ -77,7 +78,16 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    access_token = create_access_token(data={"sub": str(user.id)})
+    # Если remember_me = True → токен на 30 дней, иначе на стандартное время
+    if user_data.remember_me:
+        expires_delta = timedelta(days=30)
+        access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=expires_delta
+        )
+    else:
+        access_token = create_access_token(data={"sub": str(user.id)})
+
     return {"access_token": access_token, "token_type": "bearer"}
 
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import './Settings.css';
 
@@ -12,9 +11,9 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
     const [error, setError] = useState('');
     const [localApiUrl, setLocalApiUrl] = useState(apiUrl || 'https://expansionlinguist.onrender.com');
     const [success, setSuccess] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);  
 
     useEffect(() => {
-        // Load saved API URL
         chrome.storage.sync.get(['apiUrl'], (result) => {
             if (result.apiUrl) {
                 setLocalApiUrl(result.apiUrl);
@@ -37,7 +36,7 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
 
         const endpoint = isLogin ? '/users/login' : '/users/register';
         const body = isLogin
-            ? { username, password }
+            ? { username, password, remember_me: rememberMe }
             : { username, email, password, nickname: nickname || username };
 
         try {
@@ -56,12 +55,10 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
             }
 
             if (isLogin) {
-                // Login successful
                 chrome.storage.sync.set({
                     token: data.access_token,
                     apiUrl: localApiUrl
                 }, () => {
-                    // Fetch user info
                     fetch(`${localApiUrl}/users/me`, {
                         headers: {
                             'Authorization': `Bearer ${data.access_token}`
@@ -74,7 +71,6 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
                     });
                 });
             } else {
-                // Registration successful, switch to login
                 setSuccess('Registration successful! Please login.');
                 setIsLogin(true);
                 setPassword('');
@@ -86,7 +82,7 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
         }
     };
 
-    // If we have token and onLogin is not provided, we're in settings mode
+    // Режим настроек (когда уже есть токен)
     if (token && !onLogin) {
         return (
             <div className="settings">
@@ -109,7 +105,7 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
         );
     }
 
-    // Login/Register form
+
     return (
         <div className="auth-container">
             <div className="auth-header">
@@ -171,6 +167,19 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
                     />
                 </div>
 
+                {isLogin && (
+                    <div className="form-group">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                            />
+                            <span>Запомнить меня (30 дней)</span>
+                        </label>
+                    </div>
+                )}
+
                 {error && <div className="error">{error}</div>}
                 {success && <div className="success">{success}</div>}
 
@@ -184,6 +193,7 @@ const Settings = ({ onLogin, apiUrl, onApiUrlChange, token }) => {
                         setIsLogin(!isLogin);
                         setError('');
                         setSuccess('');
+                        setRememberMe(false); 
                     }}
                     className="switch-btn"
                 >
