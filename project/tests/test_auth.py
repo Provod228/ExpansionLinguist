@@ -45,4 +45,4 @@ def test_jwt_token_expires_delta():
 
     print(f"\n Токен по умолчанию: exp = {exp_default}")
     print(f" Токен на 30 дней: exp = {exp_long}")
-    print(f" Разница: {(exp_long - exp_default) / 86400:.1f} дней")
+    print(f"Разница: {(exp_long - exp_default) / 86400:.1f} дней")
