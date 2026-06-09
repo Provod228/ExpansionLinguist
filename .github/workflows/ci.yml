@@ -26,6 +26,10 @@ jobs:
           pip install pytest
 
       - name: Run tests
+        env:
+          DATABASE_URL: "sqlite:///./test.db"
+          SECRET_KEY: "test_secret_key_for_ci"
+          OPENROUTER_API_KEY: "dummy_key"
         run: |
           cd project
           pytest
