@@ -40,9 +40,14 @@ def test_jwt_token_expires_delta():
 
     token_long = create_access_token(data={"sub": "1"}, expires_delta=timedelta(days=30))
     exp_long = jwt.decode(token_long, key=None, options={"verify_signature": False})["exp"]
-    # Проверяем, что второй токен живёт дольше
+
     assert exp_long > exp_default
 
-    print(f"\n Токен по умолчанию: exp = {exp_default}")
-    print(f" Токен на 30 дней: exp = {exp_long}")
-    print(f"Разница: {(exp_long - exp_default) / 86400:.1f} дней")
+    
+    diff = exp_long - exp_default
+    assert diff > 2592000 - 3600  # 30 дней минус 1 час
+    assert diff < 2592000 + 3600  # 30 дней плюс 1 час
+
+    print(f"\nТокен по умолчанию: exp = {exp_default}")
+    print(f"Токен на 30 дней: exp = {exp_long}")
+    print(f"Разница: {diff} секунд (~{diff // 86400} дней)")
