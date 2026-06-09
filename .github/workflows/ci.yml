@@ -25,11 +25,16 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Create .env file
+        run: |
+          cd project
+          echo "DATABASE_URL=sqlite:///./test.db" > .env
+          echo "SECRET_KEY=test_secret_key_for_ci_12345" >> .env
+          echo "OPENROUTER_API_KEY=dummy_key_for_ci" >> .env
+          echo "ALGORITHM=HS256" >> .env
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=60" >> .env
+
       - name: Run tests
-        env:
-          DATABASE_URL: "sqlite:///./test.db"
-          SECRET_KEY: "test_secret_key_for_ci"
-          OPENROUTER_API_KEY: "dummy_key"
         run: |
           cd project
           pytest
