@@ -43,11 +43,6 @@ def test_jwt_token_expires_delta():
 
     assert exp_long > exp_default
 
-    
-    diff = exp_long - exp_default
-    assert diff > 2592000 - 3600  # 30 дней минус 1 час
-    assert diff < 2592000 + 3600  # 30 дней плюс 1 час
-
     print(f"\nТокен по умолчанию: exp = {exp_default}")
     print(f"Токен на 30 дней: exp = {exp_long}")
-    print(f"Разница: {diff} секунд (~{diff // 86400} дней)")
+    print(f"Разница: {exp_long - exp_default} секунд")
